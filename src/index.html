@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Safe Tx</title>
+    <style>
+      #tx .group {
+        margin-bottom: 0.2rem;
+      }
+      #tx label {
+        display: inline-block;
+        width: 10rem;
+        vertical-align: middle;
+      }
+      #tx input[type=text],
+      #tx select {
+        font-family: monospace;
+        display: inline-block;
+        box-sizing: border-box;
+        height: 1.75rem;
+        width: 35rem;
+        vertical-align: middle;
+      }
+      #tx input[type=checkbox] {
+        height: 1.75rem;
+        display: inline-block;
+        box-sizing: border-box;
+        margin: 0;
+        vertical-align: middle;
+      }
+      #actions {
+        margin-top: 1rem;
+        box-sizing: border-box;
+        width: 45rem;
+      }
+      #tx button {
+        font-family: monospace;
+      }
+      #actions button {
+        float: right;
+        margin-left: 1rem;
+        height: 1.75rem;
+        width: 6.4rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <form id="tx">
+      <div class="group">
+        <label for="safe">Safe</label><!--
+     --><input type="text" id="safe" value="0x0000000000000000000000000000000000000000">
+      </div>
+      <div class="group">
+        <label for="to">To</label><!--
+     --><input type="text" id="to" value="0x0000000000000000000000000000000000000000">
+      </div>
+      <div class="group">
+        <label for="value">Value</label><!--
+     --><input type="text" id="value" value="0">
+      </div>
+      <div class="group">
+        <label for="data">Data</label><!--
+     --><input type="text" id="data" value="0x">
+      </div>
+      <div class="group">
+        <label for="operation">Operation</label><!--
+     --><select id="operation">
+          <option value="0" selected>call</option>
+          <option value="1">delegatecall</option>
+        </select>
+      </div>
+      <div class="group">
+        <label for="safeTxGas">Safe Tx Gas</label><!--
+     --><input type="text" id="safeTxGas" value="0">
+      </div>
+      <div class="group">
+        <label for="baseGas">Base Gas</label><!--
+     --><input type="text" id="baseGas" value="0">
+      </div>
+      <div class="group">
+        <label for="gasPrice">Gas Price</label><!--
+     --><input type="text" id="gasPrice" value="0">
+      </div>
+      <div class="group">
+        <label for="gasToken">Gas Token</label><!--
+     --><input type="text" id="gasToken" value="0x0000000000000000000000000000000000000000">
+      </div>
+      <div class="group">
+        <label for="refundReceiver">Refund Receiver</label><!--
+     --><input type="text" id="refundReceiver" value="0x0000000000000000000000000000000000000000">
+      </div>
+      <div class="group">
+        <label for="nonce">Nonce</label><!--
+     --><input type="text" id="nonce" value="0">
+      </div>
+      <div class="group">
+        <label for="signingScheme">Signing Scheme</label><!--
+     --><select id="signingScheme">
+          <option value="eip712" selected>eip712</option>
+          <option value="ethsign">ethsign</option>
+          <option value="validator">validator</option>
+        </select>
+      </div>
+      <div class="group">
+        <label for="signatures">Signatures</label><!--
+     --><input type="text" id="signatures" value="0x">
+      </div>
+
+      <div id="actions">
+        <button type="button" id="execute">Execute</button>
+        <button type="button" id="sign">Sign</button>
+      </div>
+    </form>
+
+    <script data-src="index.js">
+    </script>
+  </body>
+</html>
