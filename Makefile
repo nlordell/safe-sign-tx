@@ -1,7 +1,7 @@
 dist/index.html: src/index.html dist/index.js
 	sed '\#<script data-src="index.js">#r dist/index.js' src/index.html > dist/index.html
 
-dist/index.js: src/index.js src/lib/ethers.js
+dist/index.js: src/index.js
 	mkdir -p dist/
 	deno bundle src/index.js dist/index.js
 

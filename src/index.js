@@ -1,4 +1,4 @@
-import { ethers } from "./lib/ethers.js";
+import { ethers } from "https://raw.githubusercontent.com/ethers-io/ethers.js/v5.5.1/packages/ethers/dist/ethers.esm.js";
 
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const signer = provider.getSigner();

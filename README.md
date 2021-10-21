@@ -5,6 +5,7 @@ A tiny static HTML page for signing Gnosis Safe transactions
 ## Building
 
 Building the static page requires:
+
 - POSIX environment, specifically `make` and `sed`
 - [Deno](https://deno.land) for bundling JavaScript
 - _Optionally_ [cURL](https://curl.se) for uploading to IPFS
