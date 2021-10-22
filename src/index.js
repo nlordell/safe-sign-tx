@@ -34,19 +34,70 @@ function flagSignature(signature, flag) {
   );
 }
 
+function recoverOwner(domain, tx, signature) {
+  const signatureArray = ethers.utils.arrayify(signature);
+  const [r, s] = ethers.utils.defaultAbiCoder.decode(
+    ["bytes32", "bytes32"],
+    signatureArray.subarray(0, 64),
+  );
+  const v = signatureArray[64];
+
+  if (v >= 27 && v <= 30) {
+    return ethers.utils.verifyTypedData(
+      domain,
+      { SafeTx: SAFE_TX_TYPE },
+      tx,
+      signature,
+    );
+  } else if (v >= 31 && v <= 34) {
+    return ethers.utils.verifyMessage(
+      ethers.utils.arrayify(
+        ethers.utils._TypedDataEncoder.hash(
+          domain,
+          { SafeTx: SAFE_TX_TYPE },
+          tx,
+        ),
+      ),
+      ethers.utils.joinSignature({ r, s, v: v - 4 }),
+    );
+  } else if (v === 1) {
+    const [owner] = ethers.utils.defaultAbiCoder.decode(["address"], r);
+    return owner;
+  } else {
+    throw new Error(`invalid signature V-value ${v}`);
+  }
+}
+
 function readTx() {
+  const a = ethers.utils.getAddress;
+  const i = ethers.BigNumber.from;
+  const b = ethers.utils.hexlify;
   return {
-    to: document.querySelector("#to").value,
-    value: document.querySelector("#value").value,
-    data: document.querySelector("#data").value,
-    operation: document.querySelector("#operation").value,
-    safeTxGas: document.querySelector("#safeTxGas").value,
-    baseGas: document.querySelector("#baseGas").value,
-    gasPrice: document.querySelector("#gasPrice").value,
-    gasToken: document.querySelector("#gasToken").value,
-    refundReceiver: document.querySelector("#refundReceiver").value,
-    nonce: document.querySelector("#nonce").value,
+    to: a(document.querySelector("#to").value),
+    value: i(document.querySelector("#value").value),
+    data: b(document.querySelector("#data").value),
+    operation: parseInt(document.querySelector("#operation").value),
+    safeTxGas: i(document.querySelector("#safeTxGas").value),
+    baseGas: i(document.querySelector("#baseGas").value),
+    gasPrice: i(document.querySelector("#gasPrice").value),
+    gasToken: a(document.querySelector("#gasToken").value),
+    refundReceiver: a(document.querySelector("#refundReceiver").value),
+    nonce: i(document.querySelector("#nonce").value),
   };
+}
+
+function readSignatures() {
+  const rawSignatures = document.querySelector("#signatures").value;
+  const byteLength = ethers.utils.hexDataLength(rawSignatures);
+  if (byteLength % 65 !== 0) {
+    throw new Error("invalid signatures");
+  }
+
+  const signatures = [];
+  for (let i = 0; i < byteLength; i += 65) {
+    signatures.push(ethers.utils.hexDataSlice(rawSignatures, i, i + 65));
+  }
+  return signatures;
 }
 
 const SAFE_TX_TYPE = [
@@ -62,6 +113,13 @@ const SAFE_TX_TYPE = [
   { name: "nonce", type: "uint256" },
 ];
 
+document.querySelector("#clearsig").addEventListener(
+  "click",
+  handleError(() => {
+    document.querySelector("#signatures").value = "0x";
+  }),
+);
+
 document.querySelector("#sign").addEventListener(
   "click",
   handleError(async () => {
@@ -74,6 +132,7 @@ document.querySelector("#sign").addEventListener(
     };
     const tx = readTx();
     const signingScheme = document.querySelector("#signingScheme").value;
+    const signatures = readSignatures();
 
     let signature;
     switch (signingScheme) {
@@ -106,7 +165,23 @@ document.querySelector("#sign").addEventListener(
         break;
     }
 
-    alert(signature);
+    signatures.push(signature);
+    document.querySelector("#signatures").value = ethers.utils.hexConcat(
+      signatures
+        .map((signature) => {
+          const owner = recoverOwner(domain, tx, signature);
+          return [owner, signature];
+        })
+        .sort(([a], [b]) => {
+          const al = a.toLowerCase();
+          const bl = b.toLowerCase();
+          if (al == bl) {
+            throw new Error("duplicate owner");
+          }
+          return al < bl ? -1 : 1;
+        })
+        .map(([, signature]) => signature),
+    );
   }),
 );
 
@@ -122,7 +197,7 @@ document.querySelector("#execute").addEventListener(
     );
     const tx = readTx();
 
-    const receipt = await safe.execTransaction(
+    await safe.execTransaction(
       tx.to,
       tx.value,
       tx.data,
@@ -134,7 +209,5 @@ document.querySelector("#execute").addEventListener(
       tx.refundReceiver,
       document.querySelector("#signatures").value,
     );
-
-    alert(receipt.hash);
   }),
 );
