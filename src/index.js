@@ -83,6 +83,7 @@ function readTx() {
     gasToken: a(document.querySelector("#gasToken").value),
     refundReceiver: a(document.querySelector("#refundReceiver").value),
     nonce: i(document.querySelector("#nonce").value),
+    chainId: i(document.querySelector("#chainId").value),
   };
 }
 
@@ -125,12 +126,12 @@ document.querySelector("#sign").addEventListener(
   handleError(async () => {
     await ethereum.request({ method: "eth_requestAccounts" });
 
-    const { chainId } = await provider.getNetwork();
+    const tx = readTx();
+    const { chainId } = tx;
     const domain = {
       chainId,
       verifyingContract: document.querySelector("#safe").value,
     };
-    const tx = readTx();
     const signingScheme = document.querySelector("#signingScheme").value;
     const signatures = readSignatures();
 
