@@ -120,6 +120,70 @@ document.querySelector("#clearsig").addEventListener(
   }),
 );
 
+document.querySelector("#simulate").addEventListener(
+  "click",
+  handleError(async () => {
+    await ethereum.request({ method: "eth_requestAccounts" });
+
+    const { chainId } = await provider.getNetwork();
+    const safe = new ethers.Contract(
+      document.querySelector("#safe").value,
+      GNOSIS_SAFE,
+      signer,
+    );
+    const tx = readTx();
+
+    const raw = await safe.populateTransaction.execTransaction(
+      tx.to,
+      tx.value,
+      tx.data,
+      tx.operation,
+      tx.safeTxGas,
+      tx.baseGas,
+      tx.gasPrice,
+      tx.gasToken,
+      tx.refundReceiver,
+      ethers.utils.solidityPack(
+        ["uint256", "uint256", "uint8"],
+        [await signer.getAddress(), 0, 1],
+      ),
+    );
+
+    const response = await fetch("https://simulation.safe.global/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "network_id": `${chainId}`,
+        "from": await signer.getAddress(),
+        "to": raw.to,
+        "input": raw.data,
+        "gas": 30000000,
+        "gas_price": "0",
+        "state_objects": {
+          [safe.address]: {
+            "storage": {
+              "0x0000000000000000000000000000000000000000000000000000000000000004":
+                "0x0000000000000000000000000000000000000000000000000000000000000001",
+            },
+          },
+        },
+        "save": true,
+        "save_if_fails": true,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    const { simulation: { id } } = await response.json();
+    window.open(
+      `https://dashboard.tenderly.co/public/safe/safe-apps/simulator/${id}`,
+    );
+  }),
+);
+
 document.querySelector("#sign").addEventListener(
   "click",
   handleError(async () => {
