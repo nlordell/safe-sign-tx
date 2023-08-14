@@ -211,3 +211,56 @@ document.querySelector("#execute").addEventListener(
     );
   }),
 );
+
+const EXPORT_FIELDS = [
+  "#to",
+  "#value",
+  "#data",
+  "#operation",
+  "#safeTxGas",
+  "#baseGas",
+  "#gasPrice",
+  "#gasToken",
+  "#refundReceiver",
+  "#nonce",
+  "#signatures",
+];
+
+document.querySelector("#import").addEventListener(
+  "click",
+  handleError(() => {
+    const data = prompt("Paste exported data");
+    const tx = JSON.parse(atob(data));
+    for (const field of EXPORT_FIELDS) {
+      if (typeof tx[field] !== typeof document.querySelector(field).value) {
+        throw new Error(`export data missing or invalid ${field}`);
+      }
+    }
+    for (const field of EXPORT_FIELDS) {
+      document.querySelector(field).value = tx[field];
+    }
+  }),
+);
+
+let copiedTimeout = null;
+const EXPORT_BUTTON_TEXT = document.querySelector("#export").textContent;
+document.querySelector("#export").addEventListener(
+  "click",
+  handleError(() => {
+    const tx = {};
+    for (const field of EXPORT_FIELDS) {
+      tx[field] = document.querySelector(field).value;
+    }
+    const data = btoa(JSON.stringify(tx));
+    navigator.clipboard.writeText(data);
+
+    document.querySelector("#export").textContent = "Copied!";
+    if (copiedTimeout !== null) {
+      clearTimeout(copiedTimeout);
+    }
+    copiedTimeout = setTimeout(
+      () => document.querySelector("#export").textContent = EXPORT_BUTTON_TEXT,
+      1000,
+    );
+  }),
+);
