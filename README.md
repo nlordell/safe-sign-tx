@@ -15,3 +15,10 @@ make # builds dist/index.html static page
 make ipfs # builds the static HTML page and uploads it to IPFS
 make clean # cleans up the dist/ directory
 ```
+
+## Starting
+
+Starting it:
+```
+make host
+```
